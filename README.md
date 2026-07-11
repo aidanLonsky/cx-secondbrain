@@ -37,6 +37,18 @@ uv run python -m second_brain
 
 Use `uv run --env-file .env` to load the development environment explicitly; `.env` is not loaded automatically.
 
+## Log Format
+
+Console and file logs use the same compact structure:
+
+```text
+2026-07-11 13:07:00 | INF | second_brain.app:main:40 | Hello from second_brain!
+```
+
+Each record includes a timestamp with second precision, a three-character severity
+label, and the module, function, and source line. Console and file output have an
+identical field structure.
+
 ## Testing
 
 ```bash

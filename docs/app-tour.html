@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="An interactive visual introduction to the secondbrain command-line app."
+    />
+    <title>secondbrain — a tiny note catcher</title>
+    <style>
+      :root {
+        --ink: #172033;
+        --muted: #63718a;
+        --paper: #fffdf8;
+        --lavender: #ece8ff;
+        --purple: #6941c6;
+        --blue: #2476d3;
+        --mint: #dff8eb;
+        --coral: #ffddd2;
+        --yellow: #fff1b8;
+        --line: #dbe2ef;
+        --shadow: 0 16px 40px rgba(45, 55, 80, 0.12);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 8% 4%, #e4fbf0 0, transparent 25rem),
+          radial-gradient(circle at 94% 14%, #eee8ff 0, transparent 28rem),
+          var(--paper);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .wrap { width: min(1100px, calc(100% - 2.5rem)); margin: 0 auto; }
+      .hero { padding: 5.5rem 0 3.5rem; text-align: center; }
+      .eyebrow { color: var(--purple); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: .78rem; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { max-width: 780px; margin: .65rem auto 1rem; font-size: clamp(2.65rem, 8vw, 5.25rem); line-height: .98; letter-spacing: -.065em; }
+      h2 { font-size: clamp(1.8rem, 4vw, 2.65rem); letter-spacing: -.045em; }
+      .lead { max-width: 650px; margin: 0 auto; color: var(--muted); font-size: 1.15rem; line-height: 1.7; }
+      .note-logo { display: inline-grid; place-items: center; width: 3.15rem; height: 3.15rem; border: 2px solid var(--ink); border-radius: .8rem; background: var(--yellow); box-shadow: 5px 5px 0 var(--ink); font-size: 1.8rem; transform: rotate(-4deg); }
+
+      section { padding: 4rem 0; }
+      .section-intro { max-width: 660px; margin-bottom: 2rem; }
+      .section-intro p { color: var(--muted); line-height: 1.65; }
+      .terminal { overflow: hidden; border: 1px solid #24304a; border-radius: 1rem; background: #172033; box-shadow: var(--shadow); color: #dce8ff; }
+      .terminal-bar { display: flex; gap: .45rem; align-items: center; padding: .85rem 1rem; background: #222e48; }
+      .dot { width: .68rem; height: .68rem; border-radius: 50%; background: #ff7465; }
+      .dot:nth-child(2) { background: #ffc95b; }
+      .dot:nth-child(3) { background: #64d69b; }
+      .terminal-title { margin-left: .45rem; color: #aebbd2; font: .8rem ui-monospace, SFMono-Regular, Consolas, monospace; }
+      pre { margin: 0; padding: 1.5rem; overflow-x: auto; font: .95rem/1.75 ui-monospace, SFMono-Regular, Consolas, monospace; }
+      .prompt { color: #76dfad; } .command { color: #fff; } .highlight { color: #bca9ff; }
+
+      .command-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; margin-top: 1.25rem; }
+      .command-card { position: relative; min-height: 260px; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1.2rem; background: rgba(255, 255, 255, .82); box-shadow: 0 8px 22px rgba(45, 55, 80, .06); transition: transform .2s, box-shadow .2s; }
+      .command-card:hover { transform: translateY(-5px) rotate(-.4deg); box-shadow: var(--shadow); }
+      .command-card:nth-child(1) { border-top: 6px solid var(--purple); } .command-card:nth-child(2) { border-top: 6px solid var(--blue); } .command-card:nth-child(3) { border-top: 6px solid #24a16d; }
+      .command-icon { font-size: 2rem; } .command-card h3 { margin: .6rem 0; font-size: 1.35rem; }
+      .command-card p { color: var(--muted); line-height: 1.55; }
+      code { border-radius: .36rem; background: #eef2f8; padding: .16rem .35rem; color: #323c51; font: .86em ui-monospace, SFMono-Regular, Consolas, monospace; }
+      .tag { display: inline-block; margin-top: .7rem; padding: .32rem .55rem; border-radius: 999px; background: var(--lavender); color: var(--purple); font-size: .8rem; font-weight: 750; }
+
+      .journey { display: grid; grid-template-columns: repeat(5, 1fr); align-items: start; gap: .75rem; }
+      .journey-step { position: relative; padding: 1rem; min-height: 175px; border-radius: 1rem; background: #fff; border: 1px solid var(--line); }
+      .journey-step::after { content: "→"; position: absolute; right: -.78rem; top: 42%; z-index: 1; color: var(--purple); font-size: 1.5rem; font-weight: 800; }
+      .journey-step:last-child::after { display: none; }
+      .step-number { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; margin-bottom: .7rem; border-radius: 50%; background: var(--mint); color: #176541; font-size: .8rem; font-weight: 800; }
+      .journey-step strong { display: block; margin-bottom: .4rem; } .journey-step span { color: var(--muted); font-size: .9rem; line-height: 1.4; }
+
+      .explorer { display: grid; grid-template-columns: minmax(250px, .8fr) minmax(0, 1.2fr); gap: 1.5rem; }
+      .tree, .file-detail { border: 1px solid var(--line); border-radius: 1.2rem; background: rgba(255, 255, 255, .84); box-shadow: 0 8px 22px rgba(45, 55, 80, .05); }
+      .tree { padding: .85rem; }
+      .tree-title { padding: .6rem .8rem 1rem; color: var(--muted); font: .85rem ui-monospace, SFMono-Regular, Consolas, monospace; }
+      .file-button { display: flex; width: 100%; gap: .7rem; align-items: center; padding: .85rem; border: 0; border-radius: .75rem; background: transparent; color: var(--ink); text-align: left; cursor: pointer; font: 600 .96rem ui-monospace, SFMono-Regular, Consolas, monospace; transition: background .16s, transform .16s; }
+      .file-button:hover, .file-button[aria-selected="true"] { background: var(--lavender); color: #42258e; } .file-button:hover { transform: translateX(3px); }
+      .folder { color: #e3a52e; } .py { color: var(--blue); }
+      .file-detail { padding: clamp(1.4rem, 4vw, 2.6rem); min-height: 310px; }
+      .detail-icon { font-size: 2.4rem; } .detail-path { margin: .8rem 0; color: var(--purple); font: .85rem ui-monospace, SFMono-Regular, Consolas, monospace; }
+      .file-detail h3 { font-size: 1.8rem; letter-spacing: -.04em; } .file-detail p { max-width: 540px; color: var(--muted); line-height: 1.7; }
+      .detail-list { padding-left: 1.2rem; color: #42506a; line-height: 1.75; }
+      .tip { margin-top: 1.1rem; padding: .8rem 1rem; border-radius: .7rem; background: var(--yellow); color: #68530d; font-size: .92rem; }
+      footer { padding: 2.5rem 0 3.5rem; text-align: center; color: var(--muted); font-size: .9rem; }
+
+      @media (max-width: 760px) {
+        .command-grid, .explorer { grid-template-columns: 1fr; }
+        .journey { grid-template-columns: 1fr; }
+        .journey-step { min-height: auto; }
+        .journey-step::after { right: auto; left: 50%; top: auto; bottom: -.9rem; transform: rotate(90deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="hero wrap">
+        <div class="note-logo" aria-hidden="true">🧠</div>
+        <p class="eyebrow">A visual tour of secondbrain</p>
+        <h1>Your tiny, terminal-powered idea catcher.</h1>
+        <p class="lead">secondbrain turns a passing thought into a Markdown note, then helps you find it again. No database, no accounts—just files you own.</p>
+      </header>
+
+      <section class="wrap" aria-labelledby="help-heading">
+        <div class="section-intro">
+          <p class="eyebrow">Start here</p>
+          <h2 id="help-heading">Ask it what it can do.</h2>
+          <p>The built-in <code>--help</code> flag reveals one option and three friendly commands. This is the app’s actual command-line menu.</p>
+        </div>
+        <div class="terminal" role="img" aria-label="Terminal showing the secondbrain help output">
+          <div class="terminal-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="terminal-title">your terminal</span></div>
+          <pre><span class="prompt">$</span> <span class="command">secondbrain --help</span>
+
+Usage: secondbrain [OPTIONS] COMMAND [ARGS]...
+
+  Capture and manage Markdown notes.
+
+Options:
+  <span class="highlight">--help</span>  Show this message and exit.
+
+Commands:
+  <span class="highlight">list</span>  List Markdown notes in the configured directory.
+  <span class="highlight">new</span>   Create a Markdown note containing TEXT.
+  <span class="highlight">show</span>  Print the note identified by its list NUMBER.</pre>
+        </div>
+        <div class="command-grid" aria-label="The three secondbrain commands">
+          <article class="command-card"><div class="command-icon">✍️</div><h3>1. Catch a thought</h3><p>Use <code>new TEXT</code> to place exactly what you type into a fresh Markdown note.</p><code>secondbrain new "Try that café"</code><span class="tag">needs: TEXT</span></article>
+          <article class="command-card"><div class="command-icon">🗂️</div><h3>2. Browse your notes</h3><p>Use <code>list</code> to see every lowercase <code>.md</code> note, ordered and numbered.</p><code>secondbrain list</code><span class="tag">needs: nothing</span></article>
+          <article class="command-card"><div class="command-icon">🔎</div><h3>3. Read one back</h3><p>Use <code>show NUMBER</code> with a number from the latest list to print that note in your terminal.</p><code>secondbrain show 2</code><span class="tag">needs: NUMBER</span></article>
+        </div>
+      </section>
+
+      <section class="wrap" aria-labelledby="journey-heading">
+        <div class="section-intro"><p class="eyebrow">One little journey</p><h2 id="journey-heading">From spark to saved thought.</h2></div>
+        <div class="journey">
+          <div class="journey-step"><div class="step-number">1</div><strong>Have an idea</strong><span>“Remember the project outline.”</span></div>
+          <div class="journey-step"><div class="step-number">2</div><strong>Say <code>new</code></strong><span>The command receives your quoted text.</span></div>
+          <div class="journey-step"><div class="step-number">3</div><strong>A file appears</strong><span>A timestamped <code>.md</code> file is safely saved.</span></div>
+          <div class="journey-step"><div class="step-number">4</div><strong>Say <code>list</code></strong><span>Your note names appear with helpful numbers.</span></div>
+          <div class="journey-step"><div class="step-number">5</div><strong>Say <code>show</code></strong><span>Pick a number and read the original text.</span></div>
+        </div>
+      </section>
+
+      <section class="wrap" aria-labelledby="files-heading">
+        <div class="section-intro"><p class="eyebrow">Under the hood</p><h2 id="files-heading">A very small source tree.</h2><p>Click a file to meet its role. There are only three source files, so the app stays pleasantly easy to follow.</p></div>
+        <div class="explorer">
+          <nav class="tree" aria-label="Source file explorer">
+            <div class="tree-title"><span class="folder">📁</span> src/</div>
+            <div class="tree-title" style="padding-left: 1.65rem"><span class="folder">📁</span> secondbrain/</div>
+            <button class="file-button" type="button" aria-selected="true" data-file="init"><span class="py">🐍</span> __init__.py</button>
+            <button class="file-button" type="button" aria-selected="false" data-file="main"><span class="py">🐍</span> __main__.py</button>
+            <button class="file-button" type="button" aria-selected="false" data-file="app"><span class="py">🐍</span> app.py</button>
+          </nav>
+          <article class="file-detail" aria-live="polite">
+            <div class="detail-icon" id="detail-icon">📦</div>
+            <p class="detail-path" id="detail-path">src/secondbrain/__init__.py</p>
+            <h3 id="detail-title">The package label</h3>
+            <p id="detail-summary">This small file marks <code>secondbrain</code> as a Python package. It does not add behavior; it gives the folder its importable identity.</p>
+            <ul class="detail-list" id="detail-list"><li>Lets Python recognize the package.</li><li>Keeps the package’s public surface intentionally quiet.</li></ul>
+            <div class="tip" id="detail-tip">Think of it as the name card on the app’s folder.</div>
+          </article>
+        </div>
+      </section>
+    </main>
+    <footer class="wrap">Made for curious humans · Run <code>secondbrain --help</code> whenever you want the real menu.</footer>
+    <script>
+      const files = {
+        init: { icon: "📦", path: "src/secondbrain/__init__.py", title: "The package label", summary: "This small file marks <code>secondbrain</code> as a Python package. It does not add behavior; it gives the folder its importable identity.", list: ["Lets Python recognize the package.", "Keeps the package’s public surface intentionally quiet."], tip: "Think of it as the name card on the app’s folder." },
+        main: { icon: "🚪", path: "src/secondbrain/__main__.py", title: "The module doorway", summary: "This is what runs when someone types <code>python -m secondbrain</code>. It imports the main command group from <code>app.py</code> and starts it.", list: ["Imports <code>main</code> from the app module.", "Makes the package runnable with Python’s <code>-m</code> switch."], tip: "A tiny doorway that leads straight to the command-line app." },
+        app: { icon: "🧠", path: "src/secondbrain/app.py", title: "The whole note-taking engine", summary: "This is the busy file. It defines the Click command group, the <code>new</code>, <code>list</code>, and <code>show</code> commands, and the helpers that read and write note files.", list: ["Uses Click for commands, arguments, help, and friendly errors.", "Uses pathlib and datetime to create and locate timestamped Markdown notes.", "Contains optional Loguru logging setup via <code>configure_logging()</code>."], tip: "If you want to understand the app’s behavior, this is the place to explore." }
+      };
+      const detail = {
+        icon: document.querySelector("#detail-icon"), path: document.querySelector("#detail-path"), title: document.querySelector("#detail-title"), summary: document.querySelector("#detail-summary"), list: document.querySelector("#detail-list"), tip: document.querySelector("#detail-tip")
+      };
+      document.querySelectorAll(".file-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          const file = files[button.dataset.file];
+          document.querySelectorAll(".file-button").forEach((item) => item.setAttribute("aria-selected", "false"));
+          button.setAttribute("aria-selected", "true");
+          detail.icon.textContent = file.icon;
+          detail.path.textContent = file.path;
+          detail.title.textContent = file.title;
+          detail.summary.innerHTML = file.summary;
+          detail.list.innerHTML = file.list.map((item) => `<li>${item}</li>`).join("");
+          detail.tip.textContent = file.tip;
+        });
+      });
+    </script>
+  </body>
+</html>
